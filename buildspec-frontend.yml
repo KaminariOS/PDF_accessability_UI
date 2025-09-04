@@ -100,6 +100,11 @@ phases:
         # Maintenance Mode
         REACT_APP_MAINTENANCE_MODE=false
         EOF
+
+      - echo "📦 S3 Bucket Configuration:"
+      - echo "Bucket ARNS:"
+      - echo "$PDF_TO_PDF_BUCKET_ARN"
+      - echo "$PDF_TO_HTML_BUCKET_ARN"
       - echo "✅ Frontend configuration created"
       - echo "📦 Installing frontend dependencies..."
       - npm install
