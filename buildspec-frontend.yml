@@ -73,6 +73,7 @@ phases:
       # Update S3 CORS policies to include Amplify URL
       - echo "🔧 Updating S3 CORS policies..."
       - |
+        # Function to update CORS policy for a bucket
         update_cors_policy() {
           local bucket_name="$1"
           echo "  📝 Processing CORS for bucket: $bucket_name"
@@ -140,24 +141,22 @@ phases:
           rm -f current_cors.json updated_cors.json
           return 0
         }
-      
-      # Update CORS for PDF processing bucket
-      - echo "🎯 Updating CORS for PDF processing bucket..."
-      - |
+        
+        # Update CORS for PDF processing bucket
+        echo "🎯 Updating CORS for PDF processing bucket..."
         if ! update_cors_policy "$PDF_TO_PDF_BUCKET_ARN"; then
           echo "❌ Failed to update CORS for PDF processing bucket: $PDF_TO_PDF_BUCKET_ARN"
           exit 1
         fi
-      
-      # Update CORS for HTML conversion bucket
-      - echo "🎯 Updating CORS for HTML conversion bucket..."
-      - |
+        
+        # Update CORS for HTML conversion bucket
+        echo "🎯 Updating CORS for HTML conversion bucket..."
         if ! update_cors_policy "$PDF_TO_HTML_BUCKET_ARN"; then
           echo "❌ Failed to update CORS for HTML conversion bucket: $PDF_TO_HTML_BUCKET_ARN"
           exit 1
         fi
-      
-      - echo "✅ S3 CORS policies updated successfully"
+        
+        echo "✅ S3 CORS policies updated successfully"
       - echo "📁 Changing to frontend directory..."
       - cd frontend
       - echo "📝 Creating frontend configuration (.env file)..."
