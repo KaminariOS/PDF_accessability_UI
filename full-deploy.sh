@@ -65,7 +65,6 @@ echo ""
 if [ -z "$PDF_TO_PDF_BUCKET_ARN" ]; then
     echo "Enter the name for your PDF-to-PDF processing bucket:"
     echo "  Example: my-pdf-processing-bucket"
-    echo "  (Leave empty to auto-generate based on project name)"
     read -p "PDF-to-PDF Bucket Name: " PDF_TO_PDF_BUCKET_ARN
     
     if [ -z "$PDF_TO_PDF_BUCKET_ARN" ]; then
@@ -79,7 +78,6 @@ if [ -z "$PDF_TO_HTML_BUCKET_ARN" ]; then
     echo ""
     echo "Enter the name for your PDF-to-HTML output bucket:"
     echo "  Example: my-pdf-html-output-bucket"
-    echo "  (Leave empty to auto-generate based on project name)"
     read -p "PDF-to-HTML Bucket Name: " PDF_TO_HTML_BUCKET_ARN
     
     if [ -z "$PDF_TO_HTML_BUCKET_ARN" ]; then
@@ -197,8 +195,7 @@ if aws codebuild create-project \
         "environmentVariables": [
             {"name": "AWS_ACCOUNT", "value": "'$AWS_ACCOUNT'"},
             {"name": "AWS_REGION", "value": "'$AWS_REGION'"},
-            {"name": "PROJECT_NAME", "value": "'$PROJECT_NAME'"},
-            {"name": "TARGET_BRANCH", "value": "'$TARGET_BRANCH'"}
+            {"name": "PROJECT_NAME", "value": "'$PROJECT_NAME'"}
         ]
     }' \
     --service-role "$ROLE_ARN" >/dev/null 2>&1; then
@@ -269,7 +266,7 @@ if [ "$AMPLIFY_APP_ID" = "None" ] || [ -z "$AMPLIFY_APP_ID" ]; then
 fi
 
 # Construct Amplify URL using the target branch
-AMPLIFY_URL="https://$TARGET_BRANCH.$AMPLIFY_APP_ID.amplifyapp.com"
+AMPLIFY_URL="https://main.$AMPLIFY_APP_ID.amplifyapp.com"
 echo "🌐 Amplify URL: $AMPLIFY_URL"
 
 # ------------------------- Stage 2: Setup Backend CodeBuild -------------------------
@@ -295,7 +292,6 @@ if aws codebuild create-project \
             {"name": "PROJECT_NAME", "value": "'$PROJECT_NAME'"},
             {"name": "AMPLIFY_URL", "value": "'$AMPLIFY_URL'"},
             {"name": "AMPLIFY_APP_ID", "value": "'$AMPLIFY_APP_ID'"},
-            {"name": "TARGET_BRANCH", "value": "'$TARGET_BRANCH'"},
             {"name": "PDF_TO_PDF_BUCKET_ARN", "value": "'$PDF_TO_PDF_BUCKET_ARN'"},
             {"name": "PDF_TO_HTML_BUCKET_ARN", "value": "'$PDF_TO_HTML_BUCKET_ARN'"}
         ]
@@ -438,7 +434,6 @@ if aws codebuild create-project \
             {"name": "PROJECT_NAME", "value": "'$PROJECT_NAME'"},
             {"name": "AMPLIFY_URL", "value": "'$AMPLIFY_URL'"},
             {"name": "AMPLIFY_APP_ID", "value": "'$AMPLIFY_APP_ID'"},
-            {"name": "TARGET_BRANCH", "value": "'$TARGET_BRANCH'"},
             {"name": "USER_POOL_ID", "value": "'$USER_POOL_ID'"},
             {"name": "USER_POOL_CLIENT_ID", "value": "'$USER_POOL_CLIENT_ID'"},
             {"name": "USER_POOL_DOMAIN", "value": "'$USER_POOL_DOMAIN'"},
@@ -499,7 +494,6 @@ echo "=================================="
 echo ""
 echo "📊 Your secure PDF Accessibility application:"
 echo "  🌐 Frontend URL: $AMPLIFY_URL"
-echo "  🌿 Target Branch: $TARGET_BRANCH"
 echo "  🔐 User Pool ID: $USER_POOL_ID"
 echo "  📱 Amplify App ID: $AMPLIFY_APP_ID"
 echo ""

@@ -8,7 +8,6 @@ env:
     # PROJECT_NAME: Project identifier for resource naming
     # AMPLIFY_URL: URL of the deployed Amplify application
     # AMPLIFY_APP_ID: Amplify application ID
-    # TARGET_BRANCH: Git branch being deployed
     # USER_POOL_ID: Cognito User Pool ID
     # USER_POOL_CLIENT_ID: Cognito User Pool Client ID
     # USER_POOL_DOMAIN: Cognito User Pool Domain
@@ -43,11 +42,10 @@ phases:
         fi
       # Verify frontend-specific environment variables
       - |
-        if [ -z "$AMPLIFY_URL" ] || [ -z "$AMPLIFY_APP_ID" ] || [ -z "$TARGET_BRANCH" ]; then
+        if [ -z "$AMPLIFY_URL" ] || [ -z "$AMPLIFY_APP_ID" ]; then
           echo "❌ Missing required Amplify environment variables"
           echo "AMPLIFY_URL: $AMPLIFY_URL"
           echo "AMPLIFY_APP_ID: $AMPLIFY_APP_ID"
-          echo "TARGET_BRANCH: $TARGET_BRANCH"
           exit 1
         fi
       # Verify Cognito environment variables
@@ -70,7 +68,7 @@ phases:
         fi
       - echo "📋 Environment configuration:"
       - echo "Account:$AWS_ACCOUNT, Region:$AWS_REGION, Project:$PROJECT_NAME"
-      - echo "Amplify:$AMPLIFY_APP_ID, Branch:$TARGET_BRANCH"
+      - echo "Amplify:$AMPLIFY_APP_ID"
       - echo "📁 Changing to frontend directory..."
       - cd frontend
       - echo "📝 Creating frontend configuration (.env file)..."
