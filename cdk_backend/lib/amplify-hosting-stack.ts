@@ -21,6 +21,28 @@ export class AmplifyHostingStack extends cdk.Stack {
         description:
           "PDF Accessibility Frontend - Manual Deployment (Pre-built Files Only)",
         // No sourceCodeProvider and no buildSpec for manual deployment
+        customRules: [
+          {
+            source: "/callback",
+            target: "/index.html",
+            status: aws_amplify.RedirectStatus.REWRITE,
+          },
+          {
+            source: "/app",
+            target: "/index.html",
+            status: aws_amplify.RedirectStatus.REWRITE,
+          },
+          {
+            source: "/home",
+            target: "/index.html",
+            status: aws_amplify.RedirectStatus.REWRITE,
+          },
+          {
+            source: "/*",
+            target: "/index.html",
+            status: aws_amplify.RedirectStatus.REWRITE,
+          },
+        ],
       }
     );
 
@@ -28,7 +50,7 @@ export class AmplifyHostingStack extends cdk.Stack {
     const branch = amplifyApp.addBranch("manual-deploy", {
       branchName: "main",
       environmentVariables: props.appEnv ?? {},
-      autoBuild: false, 
+      autoBuild: false,
     });
 
     this.websiteUrl = `https://${branch.branchName}.${amplifyApp.defaultDomain}`;
