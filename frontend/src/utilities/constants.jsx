@@ -5,7 +5,7 @@ export const region = process.env.REACT_APP_AWS_REGION || 'us-east-1';
 // S3 Bucket configurations with folder structure
 export const BUCKET_CONFIGS = {
   pdf: {
-    bucketName: process.env.PDF_TO_PDF_BUCKET_ARN,
+    bucketName: process.env.REACT_APP_PDF_TO_PDF_BUCKET_ARN,
     region: 'us-east-1',
     uploadFolder: 'pdf/',
     outputFolder: 'result/',
@@ -13,7 +13,7 @@ export const BUCKET_CONFIGS = {
     outputExtension: '.pdf'
   },
   html: {
-    bucketName: process.env.PDF_TO_HTML_BUCKET_ARN,
+    bucketName: process.env.REACT_APP_PDF_TO_HTML_BUCKET_ARN,
     region: 'us-east-1',
     uploadFolder: 'uploads/',
     outputFolder: 'remediated/',

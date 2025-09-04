@@ -407,6 +407,8 @@ echo "  Identity Pool ID: $IDENTITY_POOL_ID"
 echo "  Amplify App ID: $AMPLIFY_APP_ID"
 echo "  Amplify URL: $AMPLIFY_URL"
 echo "  Target Branch: $TARGET_BRANCH"
+echo "  PDF-to-PDF Bucket: $PDF_TO_PDF_BUCKET_ARN"
+echo "  PDF-to-HTML Bucket: $PDF_TO_HTML_BUCKET_ARN"
 echo ""
 
 echo "✅ All backend outputs retrieved successfully!"
