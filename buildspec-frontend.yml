@@ -12,8 +12,8 @@ env:
     # USER_POOL_CLIENT_ID: Cognito User Pool Client ID
     # USER_POOL_DOMAIN: Cognito User Pool Domain
     # IDENTITY_POOL_ID: Cognito Identity Pool ID
-    # PDF_TO_PDF_BUCKET_ARN: ARN of the PDF processing bucket
-    # PDF_TO_HTML_BUCKET_ARN: ARN of the HTML conversion bucket
+    # PDF_TO_PDF_BUCKET_ARN: Name of the PDF processing bucket (variable name says ARN but contains bucket name)
+    # PDF_TO_HTML_BUCKET_ARN: Name of the HTML conversion bucket (variable name says ARN but contains bucket name)
 
 phases:
   install:
@@ -69,6 +69,95 @@ phases:
       - echo "📋 Environment configuration:"
       - echo "Account:$AWS_ACCOUNT, Region:$AWS_REGION, Project:$PROJECT_NAME"
       - echo "Amplify:$AMPLIFY_APP_ID"
+      
+      # Update S3 CORS policies to include Amplify URL
+      - echo "🔧 Updating S3 CORS policies..."
+      - |
+        update_cors_policy() {
+          local bucket_name="$1"
+          echo "  📝 Processing CORS for bucket: $bucket_name"
+          
+          # Check if bucket exists
+          if ! aws s3api head-bucket --bucket "$bucket_name" 2>/dev/null; then
+            echo "  ❌ Bucket $bucket_name does not exist or is not accessible"
+            return 1
+          fi
+          
+          # Get current CORS configuration
+          echo "  📥 Getting current CORS configuration..."
+          if aws s3api get-bucket-cors --bucket "$bucket_name" --output json > current_cors.json 2>/dev/null; then
+            echo "  ✅ Current CORS policy retrieved"
+            cat current_cors.json
+          else
+            echo "  ⚠️  No existing CORS policy found, creating new one"
+            cat > current_cors.json << 'EOF'
+        {
+          "CORSRules": [
+            {
+              "AllowedHeaders": ["*"],
+              "AllowedMethods": ["GET", "PUT", "POST", "HEAD"],
+              "AllowedOrigins": ["http://localhost:3000"],
+              "ExposeHeaders": ["ETag"],
+              "MaxAgeSeconds": 3000
+            }
+          ]
+        }
+        EOF
+          fi
+          
+          # Update CORS policy to include Amplify URL if not already present
+          echo "  🔄 Updating CORS policy to include Amplify URL..."
+          jq --arg amplify_url "$AMPLIFY_URL" '
+            .CORSRules[0].AllowedOrigins |= 
+            if . | index($amplify_url) then 
+              . 
+            else 
+              . + [$amplify_url] 
+            end
+          ' current_cors.json > updated_cors.json
+          
+          echo "  📋 Updated CORS policy:"
+          cat updated_cors.json
+          
+          # Apply updated CORS policy
+          echo "  🚀 Applying updated CORS policy..."
+          if aws s3api put-bucket-cors --bucket "$bucket_name" --cors-configuration file://updated_cors.json; then
+            echo "  ✅ CORS policy updated successfully for $bucket_name"
+          else
+            echo "  ❌ Failed to update CORS policy for $bucket_name"
+            return 1
+          fi
+          
+          # Verify the update
+          echo "  🔍 Verifying CORS update..."
+          if aws s3api get-bucket-cors --bucket "$bucket_name" --query 'CORSRules[0].AllowedOrigins' --output json | grep -q "$AMPLIFY_URL"; then
+            echo "  ✅ CORS verification successful - Amplify URL found in AllowedOrigins"
+          else
+            echo "  ⚠️  CORS verification warning - Amplify URL may not be properly set"
+          fi
+          
+          # Clean up temporary files
+          rm -f current_cors.json updated_cors.json
+          return 0
+        }
+      
+      # Update CORS for PDF processing bucket
+      - echo "🎯 Updating CORS for PDF processing bucket..."
+      - |
+        if ! update_cors_policy "$PDF_TO_PDF_BUCKET_ARN"; then
+          echo "❌ Failed to update CORS for PDF processing bucket: $PDF_TO_PDF_BUCKET_ARN"
+          exit 1
+        fi
+      
+      # Update CORS for HTML conversion bucket
+      - echo "🎯 Updating CORS for HTML conversion bucket..."
+      - |
+        if ! update_cors_policy "$PDF_TO_HTML_BUCKET_ARN"; then
+          echo "❌ Failed to update CORS for HTML conversion bucket: $PDF_TO_HTML_BUCKET_ARN"
+          exit 1
+        fi
+      
+      - echo "✅ S3 CORS policies updated successfully"
       - echo "📁 Changing to frontend directory..."
       - cd frontend
       - echo "📝 Creating frontend configuration (.env file)..."
@@ -102,7 +191,7 @@ phases:
         EOF
 
       - echo "📦 S3 Bucket Configuration:"
-      - echo "Bucket ARNS:"
+      - echo "Bucket Names:"
       - echo "$PDF_TO_PDF_BUCKET_ARN"
       - echo "$PDF_TO_HTML_BUCKET_ARN"
       - echo "✅ Frontend configuration created"
